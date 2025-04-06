@@ -261,8 +261,27 @@ class V8FeatureVisitor : public base::FeatureVisitor {
 
 namespace {
 
+// Sets mandatory V8 flags.
 void SetFlags(IsolateHolder::ScriptMode mode,
               const std::string& js_command_line_flags) {
+
+  if (IsolateHolder::kStrictMode == mode) {
+    SetV8Flags("--use_strict");
+  }
+
+  // Apply any --js-flags explicitly specified by the caller.
+  if (!js_command_line_flags.empty()) {
+    std::vector<std::string_view> flag_list = base::SplitStringPiece(
+        js_command_line_flags, ",", base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+    for (const auto& flag : flag_list) {
+      v8::V8::SetFlagsFromString(std::string(flag).c_str(), flag.size());
+    }
+  }
+}
+
+// Sets feature controlled V8 flags.
+void SetFeatureFlags() {
   // Chromium features prefixed with "V8Flag_" are forwarded to V8 as V8 flags,
   // with the "V8Flag_" prefix stripped off. For example, an enabled feature
   // "V8Flag_foo_bar" will be passed to V8 as the flag `--foo_bar`. Similarly,
@@ -366,8 +385,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     SetV8FlagsFormatted("--scavenger-max-new-space-capacity-mb=%i",
                         features::kV8ScavengerMaxCapacity.Get());
   }
-  SetV8FlagsIfOverridden(features::kV8SeparateGCPhases, "--separate-gc-phases",
-                         "--no-separate-gc-phases");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
                          "--no-sparkplug");
   SetV8FlagsIfOverridden(features::kV8Turbofan, "--turbofan", "--no-turbofan");
@@ -472,10 +489,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--intel-jcc-erratum-mitigation",
                          "--no-intel-jcc-erratum-mitigation");
 
-  SetV8FlagsIfOverridden(features::kV8UpdateLimitAfterLoading,
-                         "--update-allocation-limits-after-loading",
-                         "--no-update-allocation-limits-after-loading");
-
   SetV8FlagsIfOverridden(features::kV8UseLibmTrigFunctions,
                          "--use-libm-trig-functions",
                          "--no-use-libm-trig-functions");
@@ -503,10 +516,7 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-js-duplicate-named-groups");
   SetV8FlagsIfOverridden(features::kJavaScriptPromiseTry, "--js-promise-try",
                          "--no-js-promise-try");
-
-  if (IsolateHolder::kStrictMode == mode) {
-    SetV8Flags("--use_strict");
-  }
+  SetV8Flags("--js-float16array");
 
   // WebAssembly features.
 
@@ -523,17 +533,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kWebAssemblyTurboshaftInstructionSelection,
                          "--turboshaft-wasm-instruction-selection-staged",
                          "--no-turboshaft-wasm-instruction-selection-staged");
-
-  if (js_command_line_flags.empty())
-    return;
-
-  // Allow the --js-flags switch to override existing flags:
-  std::vector<std::string_view> flag_list =
-      base::SplitStringPiece(js_command_line_flags, ",", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
-  for (const auto& flag : flag_list) {
-    v8::V8::SetFlagsFromString(std::string(flag).c_str(), flag.size());
-  }
 }
 
 }  // namespace
@@ -541,14 +540,20 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 // static
 void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
                                const std::string& js_command_line_flags,
+                               bool disallow_v8_feature_flag_overrides,
                                v8::OOMErrorCallback oom_error_callback) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
 
-  // Flags need to be set before InitializePlatform as they are used for
-  // system instrumentation initialization.
-  // See https://crbug.com/v8/11043
+  // Flags need to be set before InitializePlatform as they are used for system
+  // instrumentation initialization, see https://crbug.com/v8/11043. --js-flags
+  // and other mandatory flags in `SetFlags` must be ordered after feature flag
+  // overrides.
+  SetV8Flags("--js-explicit-resource-management");
+  if (!disallow_v8_feature_flag_overrides) {
+    SetFeatureFlags();
+  }
   SetFlags(mode, js_command_line_flags);
 
   v8::V8::InitializePlatform(V8Platform::Get());

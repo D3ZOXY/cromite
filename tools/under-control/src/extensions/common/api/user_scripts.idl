@@ -67,11 +67,10 @@ namespace userScripts {
     // The JavaScript execution environment to run the script in. The default is
     // <code>`USER_SCRIPT`</code>.
     ExecutionWorld? world;
-
-    // If specified, specifies a specific user script world ID to execute in.
-    // Only valid if `world` is omitted or is `USER_SCRIPT`. If omitted, the
-    // script will execute in the default user script world.
-    // Values with leading underscores (`_`) are reserved.
+    // Specifies the user script world ID to execute in. If omitted, the script
+    // will execute in the default user script world. Only valid if `world` is
+    // omitted or is `USER_SCRIPT`. Values with leading underscores (`_`) are
+    // reserved.
     DOMString? worldId;
   };
 
@@ -82,8 +81,7 @@ namespace userScripts {
     DOMString[]? ids;
   };
 
-  // TODO(crbug.com/326657581): Remove nodoc.
-  [nodoc] dictionary InjectionTarget {
+  dictionary InjectionTarget {
     // Whether the script should inject into all frames within the tab. Defaults
     // to false. This must not be true if <code>frameIds</code> is specified.
     boolean? allFrames;
@@ -96,8 +94,7 @@ namespace userScripts {
     long tabId;
   };
 
-  // TODO(crbug.com/326657581): Remove nodoc.
-  [nodoc] dictionary InjectionResult {
+  dictionary InjectionResult {
     // The document associated with the injection.
     DOMString documentId;
     // The frame associated with the injection.
@@ -109,20 +106,25 @@ namespace userScripts {
     DOMString? error;
   };
 
-  // TODO(crbug.com/326657581): Remove nodoc.
-  [nodoc] dictionary UserScriptInjection {
+  dictionary UserScriptInjection {
     // Whether the injection should be triggered in the target as soon as
     // possible. Note that this is not a guarantee that injection will occur
     // prior to page load, as the page may have already loaded by the time the
     // script reaches the target.
     boolean? injectImmediately;
-    // The script source to inject into the target.
-    ScriptSource js;
+    // The list of ScriptSource objects defining sources of scripts to be
+    // injected into the target.
+    ScriptSource[] js;
     // Details specifying the target into which to inject the script.
     InjectionTarget target;
     // The JavaScript "world" to run the script in. The default is
     // <code>USER_SCRIPT</code>.
     ExecutionWorld? world;
+    // Specifies the user script world ID to execute in. If omitted, the script
+    // will execute in the default user script world. Only valid if `world` is
+    // omitted or is `USER_SCRIPT`. Values with leading underscores (`_`) are
+    // reserved.
+    DOMString? worldId;
   };
 
   // An object used to update the <code>`USER_SCRIPT`</code> world
@@ -204,11 +206,9 @@ namespace userScripts {
     // will inject without waiting, even if the page has not finished loading.
     // If the script evaluates to a promise, the browser will wait for the
     // promise to settle and return the resulting value.
-    // TODO(crbug.com/326657581): Remove nodoc.
-    [nodoc] static void execute(
+    static void execute(
         UserScriptInjection injection,
-        optional ExecuteCallback callback
-    );
+        optional ExecuteCallback callback);
 
     // Configures the <code>`USER_SCRIPT`</code> execution environment.
     // |properties|: Contains the user script world configuration.

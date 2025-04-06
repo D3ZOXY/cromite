@@ -25,7 +25,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/IntentHandler.j
  import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
  import org.chromium.chrome.browser.profiles.Profile;
  import org.chromium.chrome.browser.profiles.ProfileManager;
-@@ -263,9 +262,6 @@ public class IntentHandler {
+@@ -275,9 +274,6 @@ public class IntentHandler {
      public static final String EXTRA_SKIP_PRECONNECT =
              "org.chromium.chrome.browser.skip_preconnect";
  
@@ -35,7 +35,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/IntentHandler.j
      private static Pair<Integer, String> sPendingReferrer;
      private static int sReferrerId;
      private static String sPendingIncognitoUrl;
-@@ -539,8 +535,6 @@ public class IntentHandler {
+@@ -551,8 +547,6 @@ public class IntentHandler {
              return ExternalAppId.LINE;
          } else if (packageName.equals(PACKAGE_WHATSAPP)) {
              return ExternalAppId.WHATSAPP;
@@ -47,16 +47,16 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/IntentHandler.j
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/provider/PageContentProviderImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/provider/PageContentProviderImpl.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/provider/PageContentProviderImpl.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/provider/PageContentProviderImpl.java
-@@ -56,8 +56,6 @@ import java.util.UUID;
- public class PageContentProviderImpl extends SplitCompatContentProvider.Impl {
+@@ -57,8 +57,6 @@ public class PageContentProviderImpl extends SplitCompatContentProvider.Impl {
  
-     private static final int INVALIDATE_URI_DELAY_MS = 10_000;
+     private static final int INVALIDATE_URI_DELAY_MS = 60_000;
+     private static final int PAGE_EXTRACTION_TIMEOUT_MS = 30_000;
 -    private static final String[] AUTHORIZED_PACKAGE_NAMES =
 -            new String[] {GSAUtils.GSA_PACKAGE_NAME};
  
      static final class PageContentInvocationState {
  
-@@ -339,10 +337,6 @@ public class PageContentProviderImpl extends SplitCompatContentProvider.Impl {
+@@ -354,10 +352,6 @@ public class PageContentProviderImpl extends SplitCompatContentProvider.Impl {
      }
  
      private static void grantAccessToUri(Uri uri) {
@@ -112,9 +112,9 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/share/LensUtils
 diff --git a/chrome/browser/gsa/java/src/org/chromium/chrome/browser/gsa/GSAUtils.java b/chrome/browser/gsa/java/src/org/chromium/chrome/browser/gsa/GSAUtils.java
 --- a/chrome/browser/gsa/java/src/org/chromium/chrome/browser/gsa/GSAUtils.java
 +++ b/chrome/browser/gsa/java/src/org/chromium/chrome/browser/gsa/GSAUtils.java
-@@ -13,16 +13,11 @@ import org.chromium.base.PackageUtils;
- 
+@@ -14,16 +14,11 @@ import org.chromium.build.annotations.Nullable;
  /** This class provides utilities for the state of Google Search App. */
+ @NullMarked
  public class GSAUtils {
 -    public static final String GSA_PACKAGE_NAME = "com.google.android.googlequicksearchbox";
 -    public static final String GSA_CLASS_NAME =
@@ -130,15 +130,15 @@ diff --git a/chrome/browser/gsa/java/src/org/chromium/chrome/browser/gsa/GSAUtil
      }
  
      /**
-@@ -34,6 +29,7 @@ public class GSAUtils {
+@@ -35,6 +30,7 @@ public class GSAUtils {
       */
      public static boolean isAgsaVersionBelowMinimum(
-             String installedVersionName, String minimumVersionName) {
+             @Nullable String installedVersionName, @Nullable String minimumVersionName) {
 +        if ((true)) return false;
          if (TextUtils.isEmpty(installedVersionName) || TextUtils.isEmpty(minimumVersionName)) {
              return true;
          }
-@@ -64,7 +60,7 @@ public class GSAUtils {
+@@ -65,7 +61,7 @@ public class GSAUtils {
       * @return The version name of the Agsa package or null if it can't be found.
       */
      public static @Nullable String getAgsaVersionName() {
@@ -206,16 +206,16 @@ diff --git a/chrome/browser/ui/android/google_bottom_bar/java/src/org/chromium/c
 diff --git a/chrome/browser/ui/android/pdf/java/src/org/chromium/chrome/browser/pdf/PdfCoordinator.java b/chrome/browser/ui/android/pdf/java/src/org/chromium/chrome/browser/pdf/PdfCoordinator.java
 --- a/chrome/browser/ui/android/pdf/java/src/org/chromium/chrome/browser/pdf/PdfCoordinator.java
 +++ b/chrome/browser/ui/android/pdf/java/src/org/chromium/chrome/browser/pdf/PdfCoordinator.java
-@@ -246,7 +246,7 @@ public class PdfCoordinator {
+@@ -249,7 +249,7 @@ public class PdfCoordinator {
      }
  
-     String requestAssistContent(String filename, boolean isWorkProfile) {
+     @Nullable String requestAssistContent(String filename, boolean isWorkProfile) {
 -        if (mUri == null) {
 +        if ((true)) {
              return null;
          }
          String structuredData;
-@@ -264,8 +264,6 @@ public class PdfCoordinator {
+@@ -267,8 +267,6 @@ public class PdfCoordinator {
          } catch (JSONException e) {
              return null;
          }
